@@ -1,7 +1,9 @@
 from typing import Optional
 from fastmcp import FastMCP
-from src.db_mysql import filter_tests, rank_investigations_by_habitat
-from src.db_qdrant import semantic_search
+from qdrant_client.models import Filter, FieldCondition, MatchValue
+from src.config import Config
+from src.db_mysql import filter_tests, rank_investigations_by_habitat, get_investigation_detail
+from src.db_qdrant import semantic_search, qdrant
 
 mcp = FastMCP("NASA-FlameInFreefall-MCP")
 
@@ -30,6 +32,18 @@ def rank_for_habitat(habitat: str = "lunar_base"):
         "target_o2_pct": target_o2,
         "ranking": rank_investigations_by_habitat(target_o2)
     }
+
+@mcp.tool()
+def inspect_investigation(psi_id: str):
+    """Obtiene ficha relacional completa, pruebas en MySQL y contexto vectorial en Qdrant para un PSI_ID."""
+    detail = get_investigation_detail(psi_id)
+    points, _ = qdrant.scroll(
+        collection_name=Config.QDRANT_COLLECTION,
+        scroll_filter=Filter(must=[FieldCondition(key="psi_id", match=MatchValue(value=psi_id))]),
+        limit=5
+    )
+    detail["vector_notes"] = [p.payload for p in points]
+    return detail
 
 if __name__ == "__main__":
     mcp.run()
