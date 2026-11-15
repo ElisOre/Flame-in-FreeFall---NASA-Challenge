@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interfaz Futurista</title>
+  <title>Flame in Freefall — NASA Space Apps Challenge 2026</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -47,6 +47,28 @@
       </div>
     </div>
   </div>
+
+  <div class="nav-controls">
+    <button type="button" id="btn-lang-toggle" class="nav-util-btn" aria-label="Switch language" title="Switch English / Español">
+      <span class="lang-pill active" data-lang="en">EN</span>
+      <span class="lang-sep">/</span>
+      <span class="lang-pill" data-lang="es">ES</span>
+    </button>
+
+    <button type="button" id="btn-theme-toggle" class="nav-util-btn" aria-label="Toggle color theme" title="Switch Dark / Light mode">
+      <svg id="icon-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden>
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg id="icon-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+      <span id="theme-label">Light</span>
+    </button>
+  </div>
 </nav>
 
 <!-- Hero section /Video/Imagen/Texto Introductorio -->
@@ -88,106 +110,113 @@
 <!-- Dashboard con datos de la nasa // SI powered -->
 <section class="dashboard-section" id="dashboard">
   <div class="db-container">
-    <!-- Encabezado y Selector de Hábitat Espacial -->
+    <!-- Header & Space Habitat Selector -->
     <div class="db-header">
       <div>
-        <span class="db-badge">SI-POWERED • MYSQL + QDRANT + MCP</span>
-        <h2 class="db-title">COMBUSTION &amp; FIRE SAFETY INTELLIGENCE</h2>
-        <p class="db-subtitle">Análisis comparativo de inflamabilidad en microgravedad (0g) y acotación para hábitats de gravedad parcial.</p>
+        <span class="db-badge">SI-POWERED &bull; MYSQL + QDRANT + MCP</span>
+        <h2 class="db-title" data-i18n="db_title">COMBUSTION &amp; FIRE SAFETY INTELLIGENCE</h2>
+        <p class="db-subtitle" data-i18n="db_subtitle">Comparative analysis of microgravity (0g) flammability and bounding insights for partial-gravity habitats.</p>
       </div>
 
       <div class="db-habitat-controls" role="group" aria-label="Target Space Environment">
         <button type="button" class="habitat-btn active" data-habitat="lunar_base">
-          <span class="hab-name">Lunar Base / Rover</span>
+          <span class="hab-name" data-i18n="hab_lunar">Lunar Base / Rover</span>
           <span class="hab-spec">&ge;30% O&#8322; &bull; &le;10.2 psi &bull; 0.16g</span>
         </button>
         <button type="button" class="habitat-btn" data-habitat="spacesuit">
-          <span class="hab-name">EVA Spacesuit</span>
+          <span class="hab-name" data-i18n="hab_suit">EVA Spacesuit</span>
           <span class="hab-spec">100% O&#8322; &bull; 4.3 psi</span>
         </button>
         <button type="button" class="habitat-btn" data-habitat="iss">
-          <span class="hab-name">ISS / Spacecraft</span>
+          <span class="hab-name" data-i18n="hab_iss">ISS / Spacecraft</span>
           <span class="hab-spec">21% O&#8322; &bull; 14.7 psi &bull; 0g</span>
         </button>
       </div>
     </div>
 
-    <!-- KPIs Dinámicos -->
+    <!-- Dynamic KPIs -->
     <div class="db-kpi-grid">
       <div class="db-kpi-card">
-        <span class="kpi-label">PSI Investigations</span>
+        <span class="kpi-label" data-i18n="kpi_inv_label">PSI Investigations</span>
         <strong class="kpi-value" id="kpi-total-inv">--</strong>
-        <span class="kpi-foot">Indexadas en MySQL &amp; Qdrant</span>
+        <span class="kpi-foot" data-i18n="kpi_inv_foot">Indexed in MySQL &amp; Qdrant</span>
       </div>
       <div class="db-kpi-card">
-        <span class="kpi-label">Top Habitat Match</span>
+        <span class="kpi-label" data-i18n="kpi_top_label">Top Habitat Match</span>
         <strong class="kpi-value kpi-accent" id="kpi-top-study">--</strong>
-        <span class="kpi-foot" id="kpi-top-score">Calculando afinidad...</span>
+        <span class="kpi-foot" id="kpi-top-score" data-i18n="kpi_top_foot">Calculating affinity...</span>
       </div>
       <div class="db-kpi-card">
-        <span class="kpi-label">Peak O&#8322; Tested</span>
+        <span class="kpi-label" data-i18n="kpi_o2_label">Peak O&#8322; Tested</span>
         <strong class="kpi-value kpi-warn" id="kpi-max-o2">--</strong>
-        <span class="kpi-foot">Máx. concentración en microgravedad</span>
+        <span class="kpi-foot" data-i18n="kpi_o2_foot">Max microgravity oxygen level</span>
       </div>
       <div class="db-kpi-card">
-        <span class="kpi-label">Partial-g Bounding</span>
+        <span class="kpi-label" data-i18n="kpi_grav_label">Partial-g Bounding</span>
         <strong class="kpi-value">0g &harr; 1g</strong>
-        <span class="kpi-foot">Acotado vía E-FIELD Flames</span>
+        <span class="kpi-foot" data-i18n="kpi_grav_foot">Bounded via E-FIELD Flames</span>
       </div>
     </div>
 
-    <!-- Consola Semántica SI (Qdrant + MySQL) -->
+    <!-- SI Semantic Console (Qdrant + MySQL) -->
     <div class="db-panel db-si-console">
       <div class="panel-head">
-        <h3>SI Semantic Interpreter &amp; Vector Retrieval</h3>
+        <h3 data-i18n="si_title">SI Semantic Interpreter &amp; Vector Retrieval</h3>
         <select id="db-phase-filter" class="db-select" aria-label="Filter by fuel phase">
-          <option value="">All Fuel Phases</option>
-          <option value="Gaseous">Gaseous</option>
-          <option value="Liquid">Liquid</option>
-          <option value="Solid">Solid</option>
+          <option value="" data-i18n="opt_all_phases">All Fuel Phases</option>
+          <option value="Gaseous" data-i18n="opt_gaseous">Gaseous</option>
+          <option value="Liquid" data-i18n="opt_liquid">Liquid</option>
+          <option value="Solid" data-i18n="opt_solid">Solid</option>
         </select>
       </div>
 
       <form id="db-si-form" class="db-si-form">
         <input type="text" id="db-si-input" class="db-input"
-               placeholder="Consulta sobre llamas frías, hollín en 0g, supresión con CO2 o condiciones de Base Lunar..."
-               value="¿Qué investigaciones aplican a atmósferas enriquecidas en oxígeno para la Base Lunar?" />
-        <button type="submit" class="db-btn-primary" id="db-si-submit">Analyze with SI</button>
+               placeholder="Ask in English or Spanish about cool flames, soot in 0g, CO2 suppression, or Lunar Base conditions..."
+               value="Which investigations apply to oxygen-enriched atmospheres for a Lunar Base?" />
+        <button type="submit" class="db-btn-primary" id="db-si-submit" data-i18n="btn_analyze">Analyze with SI</button>
       </form>
 
       <div class="db-chips">
-        <button type="button" class="db-chip" data-query="atmósferas enriquecidas en oxígeno para Base Lunar">Alto O&#8322; Base Lunar</button>
-        <button type="button" class="db-chip" data-query="extinción de gotas líquidas con CO2 y Helio en FLEX">Supresión en Gotas (FLEX)</button>
-        <button type="button" class="db-chip" data-query="inflamabilidad de sólidos y flujo de aire en BASS-II">Sólidos y Ventilación (BASS-II)</button>
-        <button type="button" class="db-chip" data-query="formación de hollín y temperatura de llama en SPICE">Hollín en Microgravedad (SPICE)</button>
+        <button type="button" class="db-chip" data-i18n="chip_lunar"
+                data-query-en="Which investigations apply to oxygen-enriched atmospheres for a Lunar Base?"
+                data-query-es="¿Qué investigaciones aplican a atmósferas enriquecidas en oxígeno para la Base Lunar?">High O&#8322; Lunar Base</button>
+        <button type="button" class="db-chip" data-i18n="chip_flex"
+                data-query-en="How effective are CO2 and Helium suppressants on liquid droplets in FLEX?"
+                data-query-es="¿Qué tan efectivos son los supresores CO2 y Helio en gotas líquidas en FLEX?">Droplet Suppression (FLEX)</button>
+        <button type="button" class="db-chip" data-i18n="chip_bass"
+                data-query-en="How does forced airflow affect solid flammability in BASS-II?"
+                data-query-es="¿Cómo afecta el flujo de aire forzado a la inflamabilidad de sólidos en BASS-II?">Solids &amp; Airflow (BASS-II)</button>
+        <button type="button" class="db-chip" data-i18n="chip_spice"
+                data-query-en="Why do microgravity flames produce more soot and lower temperatures in SPICE?"
+                data-query-es="¿Por qué las llamas en microgravedad producen más hollín y menor temperatura en SPICE?">Microgravity Soot (SPICE)</button>
       </div>
 
       <div class="db-si-output">
         <div class="si-synthesis-box">
           <span class="si-tag">SI SYNTHESIS</span>
-          <p id="db-si-answer">Conectando con servidor FastAPI / Qdrant...</p>
+          <p id="db-si-answer">Connecting to FastAPI / Qdrant server...</p>
         </div>
         <div id="db-vector-cards" class="db-vector-grid"></div>
       </div>
     </div>
 
-    <!-- Grid Principal: Ranking MySQL + Gráfico Presión vs O2 -->
+    <!-- Main Grid: MySQL Ranking + Pressure vs O2 Chart -->
     <div class="db-main-grid">
-      <!-- Tabla de Ranking -->
       <div class="db-panel">
         <div class="panel-head">
-          <h3>Habitat Relevance Ranking</h3>
-          <span class="panel-hint">Haz clic en una fila para inspeccionar</span>
+          <h3 data-i18n="rank_title">Habitat Relevance Ranking</h3>
+          <span class="panel-hint" data-i18n="rank_hint">Click a row to inspect</span>
         </div>
         <div class="db-table-wrap">
           <table class="db-table">
             <thead>
               <tr>
                 <th>PSI ID</th>
-                <th>Acronym</th>
-                <th>Phase</th>
+                <th data-i18n="th_acronym">Acronym</th>
+                <th data-i18n="th_phase">Phase</th>
                 <th>Hardware</th>
-                <th>Max O&#8322;</th>
+                <th data-i18n="th_max_o2">Max O&#8322;</th>
                 <th>Score</th>
               </tr>
             </thead>
@@ -196,11 +225,10 @@
         </div>
       </div>
 
-      <!-- Gráfico de Dispersión Atmosférica -->
       <div class="db-panel">
         <div class="panel-head">
-          <h3>Atmospheric Envelope: Pressure vs. O&#8322;</h3>
-          <span class="panel-hint">Zona Lunar &le;10.2 psi / &ge;30% O&#8322;</span>
+          <h3 data-i18n="chart_title">Atmospheric Envelope: Pressure vs. O&#8322;</h3>
+          <span class="panel-hint" data-i18n="chart_hint">Lunar Zone &le;10.2 psi / &ge;30% O&#8322;</span>
         </div>
         <div class="db-chart-wrap">
           <canvas id="db-envelope-chart"></canvas>
@@ -208,21 +236,21 @@
       </div>
     </div>
 
-    <!-- Inspector de Investigación Seleccionada + Tabla de Pruebas Experimentales -->
+    <!-- Selected Investigation Inspector + Normalized Experimental Runs -->
     <div class="db-main-grid">
       <div class="db-panel" id="db-inspector-panel">
         <div class="panel-head">
-          <h3>Investigation Deep-Dive</h3>
-          <span class="panel-hint" id="insp-psi-badge">Selecciona un estudio</span>
+          <h3 data-i18n="insp_title">Investigation Deep-Dive</h3>
+          <span class="panel-hint" id="insp-psi-badge" data-i18n="insp_select">Select a study</span>
         </div>
         <div id="db-inspector-content" class="db-inspector-body">
-          <p class="db-muted">Selecciona cualquier investigación de la tabla de ranking para ver su DOI, plataforma de vuelo, aparato experimental y notas vectoriales.</p>
+          <p class="db-muted" data-i18n="insp_empty">Select any investigation from the ranking table to view its DOI, flight platform, experimental hardware, and vector notes.</p>
         </div>
       </div>
 
       <div class="db-panel">
         <div class="panel-head">
-          <h3>Normalized Experimental Runs (MySQL)</h3>
+          <h3 data-i18n="tests_title">Normalized Experimental Runs (MySQL)</h3>
           <select id="db-test-psi-filter" class="db-select" aria-label="Filter tests by PSI ID">
             <option value="">All Investigations</option>
           </select>
@@ -233,11 +261,11 @@
               <tr>
                 <th>Test ID</th>
                 <th>PSI</th>
-                <th>Fuel / Geometry</th>
-                <th>Press.</th>
+                <th data-i18n="th_fuel">Fuel / Geometry</th>
+                <th data-i18n="th_press">Press.</th>
                 <th>O&#8322;</th>
-                <th>Airflow</th>
-                <th>Outcome</th>
+                <th data-i18n="th_airflow">Airflow</th>
+                <th data-i18n="th_outcome">Outcome</th>
               </tr>
             </thead>
             <tbody id="db-tests-body"></tbody>
