@@ -1,17 +1,33 @@
 (() => {
   const API_BASE = window.location.port === "8000" ? "" : "http://localhost:8000";
 
-  // Estado inicial: Inglés ('en') por defecto y Tema Oscuro ('dark') por defecto
   let currentLang = localStorage.getItem("flame_lang") || "en";
   let currentTheme = localStorage.getItem("flame_theme") || "dark";
   let currentHabitat = "lunar_base";
   let selectedPsiId = null;
   let envelopeChart = null;
   let allTestsCache = [];
+  let lastVectorMatches = [];
 
-  // Diccionario de traducción UI (Inglés por defecto / Español)
   const I18N = {
     en: {
+      // Navbar, Hero, Articles & Footer
+      nav_current_exp: "Current Experiments",
+      nav_apollo: "Apollo Missions",
+      nav_capsule: "Time Capsule",
+      nav_attire: "Fire Attire",
+      nav_detector: "Fire Detector",
+      nav_tanks: "Air Tanks",
+      hero_overlay: "Overlay",
+      hero_explore: "Explore",
+      art_heading: "Explore Further",
+      art_search_placeholder: "Search...",
+      art_no_results: "No articles found.",
+      read_more: "Read more...",
+      footer_note: "This project was created for the NASA Space Apps Challenge 2026",
+      team_label: "Team Members:",
+
+      // Dashboard
       db_title: "COMBUSTION & FIRE SAFETY INTELLIGENCE",
       db_subtitle: "Comparative analysis of microgravity (0g) flammability and bounding insights for partial-gravity habitats.",
       hab_lunar: "Lunar Base / Rover",
@@ -66,6 +82,23 @@
       theme_to_dark: "Dark"
     },
     es: {
+      // Navbar, Hero, Articles & Footer
+      nav_current_exp: "Experimentos Actuales",
+      nav_apollo: "Misiones Apollo",
+      nav_capsule: "Cápsula del Tiempo",
+      nav_attire: "Trajes Ignífugos",
+      nav_detector: "Detector de Incendios",
+      nav_tanks: "Tanques de Aire",
+      hero_overlay: "Superposición",
+      hero_explore: "Explorar",
+      art_heading: "Explorar Más",
+      art_search_placeholder: "Buscar...",
+      art_no_results: "No se encontraron artículos.",
+      read_more: "Leer más...",
+      footer_note: "Este proyecto fue creado para el NASA Space Apps Challenge 2026",
+      team_label: "Integrantes del Equipo:",
+
+      // Dashboard
       db_title: "INTELIGENCIA DE COMBUSTIÓN Y SEGURIDAD CONTRA INCENDIOS",
       db_subtitle: "Análisis comparativo de inflamabilidad en microgravedad (0g) y acotación para hábitats de gravedad parcial.",
       hab_lunar: "Base Lunar / Rover",
@@ -121,7 +154,6 @@
     }
   };
 
-  // Referencias DOM
   const langToggleBtn = document.getElementById("btn-lang-toggle");
   const themeToggleBtn = document.getElementById("btn-theme-toggle");
   const habitatBtns = document.querySelectorAll("#dashboard .habitat-btn");
@@ -134,9 +166,6 @@
   const siAnswer = document.getElementById("db-si-answer");
   const vectorCards = document.getElementById("db-vector-cards");
 
-  // =========================================================
-  // A. Gestión de Tema (Dark / Light)
-  // =========================================================
   function applyTheme(theme) {
     currentTheme = theme;
     localStorage.setItem("flame_theme", theme);
@@ -164,9 +193,6 @@
     });
   }
 
-  // =========================================================
-  // B. Gestión de Idioma (EN por defecto / ES)
-  // =========================================================
   function applyLanguage(lang) {
     currentLang = lang;
     localStorage.setItem("flame_lang", lang);
@@ -174,12 +200,10 @@
 
     const dict = I18N[lang];
 
-    // Actualizar indicadores EN / ES en el navbar
     document.querySelectorAll(".navbar .lang-pill").forEach((pill) => {
       pill.classList.toggle("active", pill.dataset.lang === lang);
     });
 
-    // Traducir elementos etiquetados con data-i18n
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.dataset.i18n;
       if (dict[key]) {
@@ -187,20 +211,24 @@
       }
     });
 
-    // Actualizar placeholder y pregunta por defecto si no fue editada manualmente
+    const articleSearch = document.getElementById("article-search");
+    if (articleSearch) {
+      articleSearch.placeholder = dict.art_search_placeholder;
+    }
+
     siInput.placeholder = dict.input_placeholder;
     const prevDefault = lang === "es" ? I18N.en.default_query : I18N.es.default_query;
     if (siInput.value.trim() === prevDefault || siInput.value.trim() === "") {
       siInput.value = dict.default_query;
     }
 
-    // Actualizar texto del botón de tema
     const themeLabel = document.getElementById("theme-label");
     if (themeLabel) {
       themeLabel.textContent = currentTheme === "light" ? dict.theme_to_dark : dict.theme_to_light;
     }
 
-    // Re-renderizar componentes dinámicos con etiquetas del idioma activo
+    // Re-renderizar tarjetas vectoriales, tabla de pruebas, inspector y gráfico en el idioma elegido
+    renderVectorCards(lastVectorMatches, lang);
     renderTestsTable(testPsiFilter.value);
     if (selectedPsiId) {
       loadInvestigationDetail(selectedPsiId);
@@ -216,9 +244,6 @@
     });
   }
 
-  // =========================================================
-  // C. Eventos del Dashboard (Hábitats, Chips, Formulario)
-  // =========================================================
   habitatBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       habitatBtns.forEach((b) => b.classList.remove("active"));
@@ -250,9 +275,6 @@
     renderTestsTable(testPsiFilter.value);
   });
 
-  // =========================================================
-  // D. Consumo de Endpoints (MySQL + Qdrant + Gemini)
-  // =========================================================
   async function loadRanking() {
     try {
       const res = await fetch(`${API_BASE}/api/ranking?habitat=${currentHabitat}`);
@@ -430,9 +452,13 @@
         ? `<a href="https://doi.org/${inv.doi}" target="_blank" rel="noopener" class="insp-doi-link">${inv.doi} &nearr;</a>`
         : `<span class="db-muted">N/A</span>`;
 
-      const vectorSummary = data.vector_notes && data.vector_notes.length > 0
-        ? data.vector_notes[0].text
-        : dict.insp_no_notes;
+      let vectorSummary = dict.insp_no_notes;
+      if (data.vector_notes && data.vector_notes.length > 0) {
+        const note = data.vector_notes[0];
+        vectorSummary = currentLang === "es"
+          ? (note.text_es || note.text)
+          : (note.text_en || note.text);
+      }
 
       container.innerHTML = `
         <strong>${inv.title}</strong>
@@ -449,6 +475,23 @@
     }
   }
 
+  function renderVectorCards(matches, langToDisplay) {
+    vectorCards.innerHTML = (matches || []).map((item) => {
+      const displayText = langToDisplay === "es"
+        ? (item.text_es || item.text)
+        : (item.text_en || item.text);
+      return `
+        <div class="vector-card">
+          <div class="vector-card-top">
+            <span>${item.psi_id} • ${item.acronym} (${item.fuel_phase})</span>
+            <span>Match: ${(item.score * 100).toFixed(1)}%</span>
+          </div>
+          <p>${displayText}</p>
+        </div>
+      `;
+    }).join("");
+  }
+
   async function runSIInterpretation(queryText) {
     const q = (queryText || "").trim();
     if (!q) return;
@@ -463,22 +506,14 @@
       const data = await res.json();
 
       siAnswer.textContent = data.interpretation;
-
-      vectorCards.innerHTML = (data.vector_matches || []).map((item) => `
-        <div class="vector-card">
-          <div class="vector-card-top">
-            <span>${item.psi_id} • ${item.acronym} (${item.fuel_phase})</span>
-            <span>Match: ${(item.score * 100).toFixed(1)}%</span>
-          </div>
-          <p>${item.text}</p>
-        </div>
-      `).join("");
+      lastVectorMatches = data.vector_matches || [];
+      const responseLang = data.detected_lang || currentLang;
+      renderVectorCards(lastVectorMatches, responseLang);
     } catch (err) {
       siAnswer.textContent = "Error querying SI interpreter. Make sure python main_api.py is running.";
     }
   }
 
-  // Inicialización respetando preferencias (Inglés + Oscuro por defecto)
   applyTheme(currentTheme);
   applyLanguage(currentLang);
   loadRanking();
