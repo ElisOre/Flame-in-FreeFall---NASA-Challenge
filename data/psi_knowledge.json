@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "psi_id": "PSI-60",
+    "acronym": "SPICE Re-Analysis",
+    "fuel_phase": "Gaseous",
+    "safety_pillar": "Predictive Modeling",
+    "text": "Integración de métodos computacionales y experimentales sobre más de 1600 imágenes DSLR RAW del experimento SPICE para derivar temperatura y fracciones de volumen de hollín en quemadores Yale y ACME. Explica por qué en microgravedad (0g) las llamas son más largas, difusas, frías y con más hollín que en 1g."
+  },
+  {
+    "id": 2,
+    "psi_id": "PSI-69",
+    "acronym": "FLEX",
+    "fuel_phase": "Liquid",
+    "safety_pillar": "Suppression",
+    "text": "Flame Extinguishment Experiment (FLEX) evalúa límites de inflamabilidad de gotas líquidas (metanol y heptano) en el rack CIR usando el aparato MDCA. Mide la eficacia de supresores CO2, Helio (He), SF6 y N2, tasas de quemado y diámetros de extinción radiativa."
+  },
+  {
+    "id": 3,
+    "psi_id": "PSI-25",
+    "acronym": "BASS-II",
+    "fuel_phase": "Solid",
+    "safety_pillar": "Prevention",
+    "text": "Burning and Suppression of Solids II (BASS-II) estudia la ignición, propagación y extinción de sólidos (PMMA, telas SIBAL, celulosa) en el MSG con flujos de aire de hasta 40 cm/s. Demuestra que con ventilación los materiales arden igual o mejor en microgravedad que en la Tierra."
+  },
+  {
+    "id": 4,
+    "psi_id": "PSI-159",
+    "acronym": "ACME CFI-G",
+    "fuel_phase": "Gaseous",
+    "safety_pillar": "Prevention",
+    "text": "Cool Flames Investigation with Gases (CFI-G) probó las concentraciones de oxígeno más altas en microgravedad (hasta 85% O2) con propano, butano y pentano en quemador esférico. Es clave para hábitats lunares y rovers (>=30% O2 y <=10.2 psi)."
+  }
+]
