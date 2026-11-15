@@ -4,3 +4,8 @@
 node_modules
 dist
 .cache
+__pycache__/
+.env
+qdrant_psi_db
+.vscode
+.venv
