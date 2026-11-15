@@ -1,5 +1,6 @@
 import json
 import re
+import urllib.error
 import urllib.request
 from typing import Optional
 from fastapi import FastAPI
@@ -87,8 +88,11 @@ def api_si_interpret(
     matched_psi_ids = [h["psi_id"] for h in vector_hits if h.get("psi_id")]
 
     related_tests = []
-    for pid in matched_psi_ids[:2]:
-        related_tests.extend(filter_tests(psi_id=pid, limit=5))
+    for pid in matched_psi_ids[:3]:
+        related_tests.extend(filter_tests(psi_id=pid, limit=6))
+    # Si las investigaciones vectoriales no tienen corridas tabulares propias (ej. PSI-60), traer muestra general
+    if not related_tests:
+        related_tests = filter_tests(limit=8)
 
     top_hit = vector_hits[0] if vector_hits else None
     top_rank = ranking[0] if ranking else None
@@ -114,33 +118,51 @@ def api_si_interpret(
 
     ai_interpretation = fallback_summary
 
-    if Config.LLM_API_KEY and Config.LLM_API_KEY.startswith("AIza"):
+    api_key = (Config.LLM_API_KEY or "").strip()
+
+    if api_key:
         try:
             prompt = (
                 "You are a NASA spacecraft fire safety specialist (Flame in Freefall project). "
-                "CRITICAL RULE: Detect the language in which the 'User question' is written and write your ENTIRE response "
-                "strictly in THAT exact same language (if the question is in English, answer in English; if in Spanish, answer in Spanish; "
-                "if in any other language, answer in that language). If the question is only an acronym/keyword with no clear sentence language, "
-                f"respond in '{detected_lang}'.\n"
-                "Be concise, objective, and technical (max 120 words), grounded ONLY in the retrieved data below:\n"
+                "CRITICAL RULE: Detect the language of 'User question' and write your ENTIRE response strictly in THAT exact language.\n"
+                "Provide a thorough, structured technical analysis (220-320 words) organized with clear bullet points covering:\n"
+                "1) Key experimental findings & physics in microgravity (0g),\n"
+                "2) Quantitative comparison of O2%, pressure (psi), airflow, and burning/spread rates from the retrieved tests,\n"
+                "3) Engineering implications for crew habitat safety and partial-gravity bounding (0g vs 1g).\n"
+                "Ground every metric strictly in the retrieved data below:\n"
                 f"User question: {q}\n"
                 f"Target environment: {habitat} ({target_o2}% O2)\n"
                 f"Qdrant semantic context: {json.dumps(vector_hits, ensure_ascii=False)}\n"
-                f"Related MySQL test runs: {json.dumps(related_tests[:4], ensure_ascii=False)}"
+                f"Related MySQL test runs: {json.dumps(related_tests, ensure_ascii=False)}"
             )
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={Config.LLM_API_KEY}"
+
+            # Enrutamiento automático según el tipo de clave de Google
+            if api_key.startswith("AQ."):
+                # Clave de Vertex AI Express Mode (Google Cloud)
+                url = f"https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent?key={api_key}"
+            else:
+                # Clave estándar de Google AI Studio (AIzaSy...)
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+
+            # ... (misma URL y payload, aumentando maxOutputTokens a 900)
             payload = json.dumps({
-                "contents": [{"parts": [{"text": prompt}]}],
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
                 "generationConfig": {
-                    "temperature": 0.2,
-                    "maxOutputTokens": 450
+                    "temperature": 0.25,
+                    "maxOutputTokens": 900
                 }
             }).encode("utf-8")
+
             req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=12) as resp:
+            with urllib.request.urlopen(req, timeout=15) as resp:
                 result = json.loads(resp.read().decode("utf-8"))
                 ai_interpretation = result["candidates"][0]["content"]["parts"][0]["text"]
-        except Exception:
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode("utf-8", errors="ignore")
+            print(f"[Gemini API Error {e.code}]: {error_body}")
+            ai_interpretation = fallback_summary
+        except Exception as e:
+            print(f"[Gemini Connection Error]: {e}")
             ai_interpretation = fallback_summary
 
     return {

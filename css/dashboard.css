@@ -607,3 +607,21 @@ body.light-theme .footer-team li {
 body.light-theme .member-gh {
   color: #0284c7 !important;
 }
+
+#dashboard .si-synthesis-box p {
+  white-space: pre-line;
+}
+
+#dashboard .si-chart-box {
+  background: var(--db-input-bg);
+  border: 1px solid var(--db-subtle-border);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+}
+
+#dashboard .si-canvas-holder {
+  position: relative;
+  height: 220px;
+  width: 100%;
+  margin-top: 0.5rem;
+}

@@ -8,6 +8,7 @@
   let envelopeChart = null;
   let allTestsCache = [];
   let lastVectorMatches = [];
+  let siQueryChart = null;
 
   const I18N = {
     en: {
@@ -275,6 +276,78 @@
     renderTestsTable(testPsiFilter.value);
   });
 
+  function renderSIQueryChart(tests) {
+    const wrap = document.getElementById("db-si-chart-wrap");
+    const ctx = document.getElementById("db-si-chart");
+    if (!wrap || !ctx || typeof Chart === "undefined") return;
+
+    if (!tests || tests.length === 0) {
+      wrap.hidden = true;
+      return;
+    }
+
+    wrap.hidden = false;
+    const isLight = currentTheme === "light";
+    const textColor = isLight ? "#334155" : "#94a3b8";
+    const gridColor = isLight ? "rgba(15, 23, 42, 0.1)" : "rgba(148, 163, 184, 0.12)";
+
+    const labels = tests.map((t) => `${t.psi_id} (${t.sample_or_test_id})`);
+    const burnRates = tests.map((t) => Number(t.burning_or_spread_rate || 0));
+    const o2Levels = tests.map((t) => Number(t.o2_percentage || 0));
+
+    if (siQueryChart) siQueryChart.destroy();
+
+    siQueryChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: currentLang === "es" ? "Tasa de Quemado / Propagación" : "Burning / Spread Rate",
+            data: burnRates,
+            backgroundColor: isLight ? "rgba(2, 132, 199, 0.75)" : "rgba(56, 189, 248, 0.75)",
+            borderRadius: 5,
+            yAxisID: "y"
+          },
+          {
+            label: currentLang === "es" ? "Concentración O₂ (%)" : "O₂ Concentration (%)",
+            data: o2Levels,
+            type: "line",
+            borderColor: isLight ? "#d97706" : "#fbbf24",
+            backgroundColor: isLight ? "#d97706" : "#fbbf24",
+            borderWidth: 2,
+            pointRadius: 5,
+            yAxisID: "y1"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: textColor, font: { family: "Inter", size: 11 } } }
+        },
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
+          y: {
+            position: "left",
+            title: { display: true, text: "Burn / Spread Rate", color: textColor },
+            ticks: { color: textColor },
+            grid: { color: gridColor }
+          },
+          y1: {
+            position: "right",
+            title: { display: true, text: "% O₂", color: textColor },
+            ticks: { color: textColor },
+            grid: { drawOnChartArea: false },
+            min: 0,
+            max: 100
+          }
+        }
+      }
+    });
+  }
+
   async function loadRanking() {
     try {
       const res = await fetch(`${API_BASE}/api/ranking?habitat=${currentHabitat}`);
@@ -475,6 +548,8 @@
     }
   }
 
+  
+
   function renderVectorCards(matches, langToDisplay) {
     vectorCards.innerHTML = (matches || []).map((item) => {
       const displayText = langToDisplay === "es"
@@ -509,6 +584,7 @@
       lastVectorMatches = data.vector_matches || [];
       const responseLang = data.detected_lang || currentLang;
       renderVectorCards(lastVectorMatches, responseLang);
+      renderSIQueryChart(data.related_tests || []);
     } catch (err) {
       siAnswer.textContent = "Error querying SI interpreter. Make sure python main_api.py is running.";
     }
