@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700;800&display=swap" rel="stylesheet">
-
 </head>
 <body>
 
@@ -22,32 +21,33 @@
 
   <div class="nav-links">
     <div class="dropdown">
-      <a href="#" class="dropbtn">Current Experiments<span class="caret">&#9662;</span></a>
+      <a href="#" class="dropbtn"><span data-i18n="nav_current_exp">Current Experiments</span><span class="caret">&#9662;</span></a>
       <div class="dropdown-content">
-        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-of-materials-on-the-moon-fm2/">FM2</a>
-        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/">SoFIE</a>
-        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-limits-at-reduced-g-experiment-flare/">FLARE</a>
+        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-of-materials-on-the-moon-fm2/" target="_blank" rel="noopener">FM2</a>
+        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/solid-fuel-ignition-and-extinction-sofie/" target="_blank" rel="noopener">SoFIE</a>
+        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-limits-at-reduced-g-experiment-flare/" target="_blank" rel="noopener">FLARE</a>
       </div>
     </div>
 
     <div class="dropdown">
-      <a href="#" class="dropbtn">Apollo Missions<span class="caret">&#9662;</span></a>
+      <a href="#" class="dropbtn"><span data-i18n="nav_apollo">Apollo Missions</span><span class="caret">&#9662;</span></a>
       <div class="dropdown-content">
-        <a href="https://sma.nasa.gov/sma-disciplines/accllp/apollo-1#history">Apollo 1</a>
-        <a href="https://sma.nasa.gov/sma-disciplines/accllp/apollo-13#history">Apollo 13</a>
+        <a href="https://sma.nasa.gov/sma-disciplines/accllp/apollo-1#history" target="_blank" rel="noopener">Apollo 1</a>
+        <a href="https://sma.nasa.gov/sma-disciplines/accllp/apollo-13#history" target="_blank" rel="noopener">Apollo 13</a>
       </div>
     </div>
 
     <div class="dropdown">
-      <a href="#" class="dropbtn">Time Capsule<span class="caret">&#9662;</span></a>
+      <a href="#" class="dropbtn"><span data-i18n="nav_capsule">Time Capsule</span><span class="caret">&#9662;</span></a>
       <div class="dropdown-content">
-        <a href="https://spinoff.nasa.gov/node/9918">Fire Attire</a>
-        <a href="https://spinoff.nasa.gov/node/9407">Fire Detector</a>
-        <a href="https://spinoff.nasa.gov/node/9582">Air Tanks</a>
+        <a href="https://spinoff.nasa.gov/node/9918" target="_blank" rel="noopener" data-i18n="nav_attire">Fire Attire</a>
+        <a href="https://spinoff.nasa.gov/node/9407" target="_blank" rel="noopener" data-i18n="nav_detector">Fire Detector</a>
+        <a href="https://spinoff.nasa.gov/node/9582" target="_blank" rel="noopener" data-i18n="nav_tanks">Air Tanks</a>
       </div>
     </div>
   </div>
 
+  <!-- Controles de Idioma y Tema -->
   <div class="nav-controls">
     <button type="button" id="btn-lang-toggle" class="nav-util-btn" aria-label="Switch language" title="Switch English / Español">
       <span class="lang-pill active" data-lang="en">EN</span>
@@ -95,17 +95,15 @@
       <svg class="icon-muted" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor"/><line x1="16" y1="9" x2="22" y2="15"/><line x1="22" y1="9" x2="16" y2="15"/></svg>
     </button>
 
-    <button type="button" id="btn-overlay" class="hero-btn hero-btn-text is-on" aria-pressed="true" title="Show / hide titles">Overlay</button>
-
+    <button type="button" id="btn-overlay" class="hero-btn hero-btn-text is-on" aria-pressed="true" title="Show / hide titles" data-i18n="hero_overlay">Overlay</button>
   </div>
 
   <div class="hero-content">
     <h1>FLAME IN FREEFALL</h1>
     <p>NASA Space Apps Challenge 2026</p>
-    <a href="#dashboard" class="hero-cta">Explore &darr;</a>
+    <a href="#dashboard" class="hero-cta"><span data-i18n="hero_explore">Explore</span> &darr;</a>
   </div>
 </header>
-
 
 <!-- Dashboard con datos de la nasa // SI powered -->
 <section class="dashboard-section" id="dashboard">
@@ -279,7 +277,7 @@
 <!-- Articulos relacionados al tema -->
 <section class="articles-section">
   <div class="articles-header">
-    <h2>Explore Further</h2>
+    <h2 data-i18n="art_heading">Explore Further</h2>
 
     <div class="search-bar">
       <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none"
@@ -291,27 +289,24 @@
     </div>
   </div>
 
-  <p class="no-results" id="no-results" hidden>No articles found.</p>
+  <p class="no-results" id="no-results" hidden data-i18n="art_no_results">No articles found.</p>
 
   <div class="articles-layout">
-
-    <!-- titulos de articulos a la izquierda 1/3 del box de css-->
     <ul class="articles-list">
       <li><button type="button" class="article-item active" data-target="art-1">Combustion Science</button></li>
       <li><button type="button" class="article-item" data-target="art-2">Why Conduct Combustion Research in Microgravity?</button></li>
       <li><button type="button" class="article-item" data-target="art-3">Fire Aboard Space Station Mir</button></li>
-      <li><button type="button" class="article-item" data-target="art-4">Fluids & Combustion Facility</button></li>
+      <li><button type="button" class="article-item" data-target="art-4">Fluids &amp; Combustion Facility</button></li>
       <li><button type="button" class="article-item" data-target="art-5">Biological and Physical Sciences Data</button></li>
     </ul>
 
-    <!-- Articulos a la derecha 2/3 del box de css-->
     <div class="articles-viewer">
       <article class="article-panel active" id="art-1">
         <h3>Combustion Science</h3>
         <p>In the United States, combustion processes contribute to about 85% of delivered energy and are an integral part in many industrial fabrication processes.
           Combustion produces greenhouse gases and soot, which contributes to global warming and causes significant health concerns. The Combustion Science Discipline
           conducts idealized experiments on the International Space Station where the removal of gravity enables researchers to study details of the combustion processes that cannot be readily studied on the ground...</p>
-        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/" class="read-more">Read more... &rarr;</a>
+        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/" target="_blank" rel="noopener" class="read-more"><span data-i18n="read_more">Read more...</span> &rarr;</a>
       </article>
 
       <article class="article-panel" id="art-2">
@@ -324,39 +319,38 @@
           These processes produce some of the most important environmental hazards
           currently facing humanity (global climate change, acid gas pollution, mercury
           contamination from coal, and wild-land fires)...</p>
-        <a href="https://www.nasa.gov/wp-content/uploads/2016/05/np-2015-10-034-jsc_combustion_in_reduced_gravity-iss-mini-book-011116-508.pdf?emrc=c9b273" class="read-more">Read more... &rarr;</a>
+        <a href="https://www.nasa.gov/wp-content/uploads/2016/05/np-2015-10-034-jsc_combustion_in_reduced_gravity-iss-mini-book-011116-508.pdf?emrc=c9b273" target="_blank" rel="noopener" class="read-more"><span data-i18n="read_more">Read more...</span> &rarr;</a>
       </article>
 
       <article class="article-panel" id="art-3">
         <h3>Fire Aboard Space Station Mir</h3>
         <p>On Feb. 24, 1997, the six crew members aboard the Russian space station Mir faced significant danger when a fire ignited in an oxygen generating system.
           The searing flame, lasting several minutes, not only cut off access to one of the two Soyuz escape vehicles but also filled the station’s modules with smoke.</p>
-        <a href="https://www.nasa.gov/history/25-years-ago-fire-aboard-space-station-mir/" class="read-more">Read more... &rarr;</a>
+        <a href="https://www.nasa.gov/history/25-years-ago-fire-aboard-space-station-mir/" target="_blank" rel="noopener" class="read-more"><span data-i18n="read_more">Read more...</span> &rarr;</a>
       </article>
 
       <article class="article-panel" id="art-4">
-        <h3>Fluids & Combustion Facility</h3>
+        <h3>Fluids &amp; Combustion Facility</h3>
         <p>The Combustion Integrated Rack (CIR), located in the U.S. Laboratory Module (Destiny), enables investigators to perform combustion research to understand the fundamentals of the combustion process, understand fire safety, and methods for suppression of fires in space.
           The CIR’s main feature is a 100-liter combustion chamber to provide the necessary safety features necessary for the various combustion investigations and is the only rack on ISS dedicated to combustion experimentation.</p>
-        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/science-facilities-on-the-iss/fluids-combustion-facility/" class="read-more">Read more... &rarr;</a>
+        <a href="https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/science-facilities-on-the-iss/fluids-combustion-facility/" target="_blank" rel="noopener" class="read-more"><span data-i18n="read_more">Read more...</span> &rarr;</a>
       </article>
 
       <article class="article-panel" id="art-5">
         <h3>Biological and Physical Sciences Data</h3>
         <p>The NASA Open Science Data Repository (OSDR) and Physical Sciences Informatics (PSI) provide open access to biological and physical science datasets from spaceflight and ground studies, enabling data reuse for discovery and innovation.</p>
-        <a href="https://science.nasa.gov/biological-physical/data/" class="read-more">Read more... &rarr;</a>
+        <a href="https://science.nasa.gov/biological-physical/data/" target="_blank" rel="noopener" class="read-more"><span data-i18n="read_more">Read more...</span> &rarr;</a>
       </article>
-
     </div>
   </div>
 </section>
 
-<!-- FOOTER - placeholder TODO: linking git accounts-->
+<!-- FOOTER -->
 <footer class="footer-section">
-  <p class="footer-note">This project was created for the NASA Space Apps Challenge 2026</p>
+  <p class="footer-note" data-i18n="footer_note">This project was created for the NASA Space Apps Challenge 2026</p>
 
   <div class="footer-team">
-    <span class="team-label">Team Members:  </span>
+    <span class="team-label" data-i18n="team_label">Team Members:</span>
     <ul>
       <li>
         <span class="member-name">Elías Miguel Orellana</span>
