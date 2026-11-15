@@ -1,4 +1,3 @@
-
 :root {
   /* Fondos */
   --bg-main: #02040d;
@@ -126,7 +125,7 @@ body::before {
   transition: color 0.3s ease, background 0.3s ease, text-shadow 0.3s ease;
 }
 
-/* barrita de carga del submenu generado con IA*/
+/* barra de carga del submenu generado con IA*/
 .dropbtn::after {
   content: "";
   position: absolute;
@@ -283,7 +282,7 @@ body::before {
 
 /* ARTICULOS */
 .articles-section {
-  max-width: 1100px;              /* mismo ancho que hero y dashboard */
+  max-width: 1100px;        /* igual de ancho que el box del dashboard */
   margin: 4rem auto;
   padding: 0 1.5rem;
 }
@@ -371,29 +370,70 @@ body::before {
   color: var(--text-highlight);
 }
 
-/* layout 1/3 y 2/3 */
+/* Box principal de articulos, Layout 1/3 - 2/3, sin espacios*/
 .articles-layout {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 1.2rem;
+  gap: 0;
   min-height: 380px;
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-box);
+  border-radius: 20px;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 0 40px rgba(47, 123, 255, 0.06);
+  overflow: hidden;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.articles-layout:hover {
+  border-color: var(--border-highlight);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.45),
+    0 0 30px rgba(47, 123, 255, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 40px rgba(47, 123, 255, 0.1);
+}
+
+/* reflejo de luz en el borde superior */
+.articles-layout::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue-2), transparent);
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .articles-layout.hidden {
   display: none;
 }
 
-/* IZQUIERDA: lista de titulos */
+/* Izquierda: lista de titulos */
 .articles-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0;
   list-style: none;
+  border-right: 1px solid var(--border-box);            /* Linea entre titulo y articulo */
+  background: rgba(4, 8, 24, 0.25);
 }
 
 .articles-list li {
   flex: 1;
   display: flex;
+  border-bottom: 1px solid rgba(120, 170, 255, 0.22);    /* linea entre titulos */
+}
+
+.articles-list li:last-child {
+  border-bottom: none;
 }
 
 .articles-list li.hidden {
@@ -412,15 +452,11 @@ body::before {
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--text);
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-box);
-  border-radius: var(--radius);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  background: transparent;
+  border: none;
+  border-radius: 0;
   cursor: pointer;
-  transition: color 0.3s ease, background 0.3s ease,
-  border-color 0.3s ease, box-shadow 0.3s ease, padding-left 0.3s ease;
+  transition: color 0.3s ease, background 0.3s ease, padding-left 0.3s ease;
 }
 
 /* barrita luminosa a la izquierda, aparece en el item activo */
@@ -428,12 +464,11 @@ body::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 18%;
-  bottom: 18%;
+  top: 0;
+  bottom: 0;
   width: 3px;
   background: linear-gradient(180deg, var(--blue-2), var(--blue-5));
   box-shadow: var(--glow-strong);
-  border-radius: 3px;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -442,7 +477,6 @@ body::before {
 .article-item:focus-visible {
   color: var(--blue-1);
   background: var(--glass-hover);
-  border-color: var(--border-highlight);
   outline: none;
 }
 
@@ -450,8 +484,6 @@ body::before {
   padding-left: 1.8rem;
   color: var(--blue-1);
   background: var(--glass-hover);
-  border-color: var(--border-highlight);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4), 0 0 22px rgba(47, 123, 255, 0.22);
   text-shadow: 0 0 10px rgba(76, 194, 255, 0.6);
 }
 
@@ -459,43 +491,10 @@ body::before {
   opacity: 1;
 }
 
-/* DERECHA: vista previa articulo */
+/* Derecha: Vista previa del articulo, 2/3 del box,  */
 .articles-viewer {
-  position: relative;
   display: grid;
   padding: 2rem 2.2rem;
-  background: var(--glass);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border-box);
-  border-radius: 20px;
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 0 40px rgba(47, 123, 255, 0.06);
-  overflow: hidden;
-  transition: border-color 0.4s ease, box-shadow 0.4s ease;
-}
-
-.articles-viewer:hover {
-  border-color: var(--border-highlight);
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.45),
-    0 0 30px rgba(47, 123, 255, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 0 40px rgba(47, 123, 255, 0.1);
-}
-
-/* reflejo de luz en el borde superior */
-.articles-viewer::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--blue-2), transparent);
-  opacity: 0.7;
 }
 
 .article-panel {
@@ -565,4 +564,3 @@ body::before {
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border-box);
 }
-
