@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 # Calcula la carpeta raíz del proyecto automáticamente
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = BASE_DIR
 
 # Carga las variables del archivo .env ubicado en la raíz
 load_dotenv(BASE_DIR / ".env")

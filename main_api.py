@@ -108,7 +108,7 @@ def api_si_interpret(q: str, habitat: str = "lunar_base", fuel_phase: Optional[s
     }
 
 # Sirve index.html, css/ y js/ directamente desde http://localhost:8000 (siempre al final)
-app.mount("/", StaticFiles(directory=str(Config.BASE_DIR), html=True), name="frontend")
+app.mount("/", StaticFiles(directory=str(Config.DATA_DIR.parent), html=True), name="frontend")
 
 if __name__ == "__main__":
     uvicorn.run("main_api:app", host="0.0.0.0", port=Config.API_PORT, reload=False)
