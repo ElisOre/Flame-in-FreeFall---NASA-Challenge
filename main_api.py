@@ -90,7 +90,13 @@ def api_si_interpret(q: str, habitat: str = "lunar_base", fuel_phase: Optional[s
                 f"Pruebas MySQL relacionadas: {json.dumps(related_tests[:4], ensure_ascii=False)}"
             )
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={Config.LLM_API_KEY}"
-            payload = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
+            payload = json.dumps({
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.2,      # Baja creatividad = máxima precisión científica con los datos de NASA
+                "maxOutputTokens": 450   # Suficiente para una explicación clara y completa en el dashboard
+            }
+            }).encode("utf-8")
             req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(req, timeout=12) as resp:
                 result = json.loads(resp.read().decode("utf-8"))
