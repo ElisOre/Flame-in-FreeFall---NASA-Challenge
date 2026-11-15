@@ -82,7 +82,7 @@ def api_si_interpret(
     target_o2 = o2_map.get(habitat, 30.0)
     detected_lang = detect_query_language(q, fallback=ui_lang)
 
-    vector_hits = semantic_search(query=q, fuel_phase=fuel_phase, top_k=3)
+    vector_hits = semantic_search(query=q, fuel_phase=fuel_phase, top_k=3, lang=detected_lang)
     ranking = rank_investigations_by_habitat(target_o2)
     matched_psi_ids = [h["psi_id"] for h in vector_hits if h.get("psi_id")]
 
