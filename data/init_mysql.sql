@@ -1,5 +1,5 @@
 CREATE DATABASE IF NOT EXISTS Flame_in_FreeFall_NASA_Challenge;
-USE nasa_psi_db;
+USE Flame_in_FreeFall_NASA_Challenge;
 
 CREATE TABLE IF NOT EXISTS investigations (
     psi_id VARCHAR(15) PRIMARY KEY,
