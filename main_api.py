@@ -38,4 +38,4 @@ def api_semantic_search(q: str, fuel_phase: Optional[str] = None):
     return semantic_search(query=q, fuel_phase=fuel_phase)
 
 if __name__ == "__main__":
-    uvicorn.run("main_api:app", host="0.0.0.0", port=Config.API_PORT, reload=True)
+    uvicorn.run("main_api:app", host="0.0.0.0", port=Config.API_PORT, reload=False)
