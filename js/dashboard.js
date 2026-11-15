@@ -1,11 +1,129 @@
 (() => {
-  // Si se abre desde Live Server (puerto 5500) apunta a localhost:8000; si se abre desde FastAPI usa ruta relativa
   const API_BASE = window.location.port === "8000" ? "" : "http://localhost:8000";
 
+  // Estado inicial: Inglés ('en') por defecto y Tema Oscuro ('dark') por defecto
+  let currentLang = localStorage.getItem("flame_lang") || "en";
+  let currentTheme = localStorage.getItem("flame_theme") || "dark";
   let currentHabitat = "lunar_base";
+  let selectedPsiId = null;
   let envelopeChart = null;
   let allTestsCache = [];
 
+  // Diccionario de traducción UI (Inglés por defecto / Español)
+  const I18N = {
+    en: {
+      db_title: "COMBUSTION & FIRE SAFETY INTELLIGENCE",
+      db_subtitle: "Comparative analysis of microgravity (0g) flammability and bounding insights for partial-gravity habitats.",
+      hab_lunar: "Lunar Base / Rover",
+      hab_suit: "EVA Spacesuit",
+      hab_iss: "ISS / Spacecraft",
+      kpi_inv_label: "PSI Investigations",
+      kpi_inv_foot: "Indexed in MySQL & Qdrant",
+      kpi_top_label: "Top Habitat Match",
+      kpi_top_foot: "Calculating affinity...",
+      kpi_o2_label: "Peak O₂ Tested",
+      kpi_o2_foot: "Max microgravity oxygen level",
+      kpi_grav_label: "Partial-g Bounding",
+      kpi_grav_foot: "Bounded via E-FIELD Flames",
+      si_title: "SI Semantic Interpreter & Vector Retrieval",
+      opt_all_phases: "All Fuel Phases",
+      opt_gaseous: "Gaseous",
+      opt_liquid: "Liquid",
+      opt_solid: "Solid",
+      input_placeholder: "Ask in English or Spanish about cool flames, soot in 0g, CO2 suppression, or Lunar Base conditions...",
+      default_query: "Which investigations apply to oxygen-enriched atmospheres for a Lunar Base?",
+      btn_analyze: "Analyze with SI",
+      chip_lunar: "High O₂ Lunar Base",
+      chip_flex: "Droplet Suppression (FLEX)",
+      chip_bass: "Solids & Airflow (BASS-II)",
+      chip_spice: "Microgravity Soot (SPICE)",
+      rank_title: "Habitat Relevance Ranking",
+      rank_hint: "Click a row to inspect",
+      th_acronym: "Acronym",
+      th_phase: "Phase",
+      th_max_o2: "Max O₂",
+      chart_title: "Atmospheric Envelope: Pressure vs. O₂",
+      chart_hint: "Lunar Zone ≤10.2 psi / ≥30% O₂",
+      insp_title: "Investigation Deep-Dive",
+      insp_select: "Select a study",
+      insp_empty: "Select any investigation from the ranking table to view its DOI, flight platform, experimental hardware, and vector notes.",
+      tests_title: "Normalized Experimental Runs (MySQL)",
+      all_inv_opt: "All Investigations",
+      th_fuel: "Fuel / Geometry",
+      th_press: "Press.",
+      th_airflow: "Airflow",
+      th_outcome: "Outcome",
+      loading_si: "Querying Qdrant vectors and MySQL metrics...",
+      no_tests: "No tabular runs registered for this filter.",
+      insp_platform: "Platform / Type",
+      insp_pillar: "Safety Pillar",
+      insp_no_notes: "No additional vector summary loaded yet for this ID.",
+      chart_ds_psi: "PSI Experimental Runs (MySQL)",
+      chart_ds_ref: "Mission Reference Envelopes",
+      chart_x: "Ambient Pressure (psi)",
+      chart_y: "Oxygen Concentration (% O₂)",
+      theme_to_light: "Light",
+      theme_to_dark: "Dark"
+    },
+    es: {
+      db_title: "INTELIGENCIA DE COMBUSTIÓN Y SEGURIDAD CONTRA INCENDIOS",
+      db_subtitle: "Análisis comparativo de inflamabilidad en microgravedad (0g) y acotación para hábitats de gravedad parcial.",
+      hab_lunar: "Base Lunar / Rover",
+      hab_suit: "Traje Espacial EVA",
+      hab_iss: "ISS / Nave Espacial",
+      kpi_inv_label: "Investigaciones PSI",
+      kpi_inv_foot: "Indexadas en MySQL y Qdrant",
+      kpi_top_label: "Mayor Afinidad Hábitat",
+      kpi_top_foot: "Calculando afinidad...",
+      kpi_o2_label: "Máx. O₂ Probado",
+      kpi_o2_foot: "Concentración máxima en microgravedad",
+      kpi_grav_label: "Acotación Gravedad Parcial",
+      kpi_grav_foot: "Acotado vía E-FIELD Flames",
+      si_title: "Intérprete Semántico SI y Recuperación Vectorial",
+      opt_all_phases: "Todas las Fases",
+      opt_gaseous: "Gaseoso",
+      opt_liquid: "Líquido",
+      opt_solid: "Sólido",
+      input_placeholder: "Pregunta en inglés o español sobre llamas frías, hollín en 0g, supresión con CO2 o Base Lunar...",
+      default_query: "¿Qué investigaciones aplican a atmósferas enriquecidas en oxígeno para la Base Lunar?",
+      btn_analyze: "Analizar con SI",
+      chip_lunar: "Alto O₂ Base Lunar",
+      chip_flex: "Supresión en Gotas (FLEX)",
+      chip_bass: "Sólidos y Flujo de Aire (BASS-II)",
+      chip_spice: "Hollín en Microgravedad (SPICE)",
+      rank_title: "Ranking de Relevancia por Hábitat",
+      rank_hint: "Haz clic en una fila para inspeccionar",
+      th_acronym: "Acrónimo",
+      th_phase: "Fase",
+      th_max_o2: "Máx O₂",
+      chart_title: "Envolvente Atmosférica: Presión vs. O₂",
+      chart_hint: "Zona Lunar ≤10.2 psi / ≥30% O₂",
+      insp_title: "Inspección Detallada de Investigación",
+      insp_select: "Selecciona un estudio",
+      insp_empty: "Selecciona cualquier investigación de la tabla de ranking para ver su DOI, plataforma de vuelo, hardware y notas vectoriales.",
+      tests_title: "Corridas Experimentales Normalizadas (MySQL)",
+      all_inv_opt: "Todas las Investigaciones",
+      th_fuel: "Combustible / Geometría",
+      th_press: "Presión",
+      th_airflow: "Flujo Aire",
+      th_outcome: "Resultado",
+      loading_si: "Consultando vectores en Qdrant y métricas en MySQL...",
+      no_tests: "Sin corridas tabulares registradas para este filtro.",
+      insp_platform: "Plataforma / Tipo",
+      insp_pillar: "Pilar de Seguridad",
+      insp_no_notes: "Sin resumen vectorial adicional cargado aún para este ID.",
+      chart_ds_psi: "Pruebas Experimentales PSI (MySQL)",
+      chart_ds_ref: "Envolventes de Referencia de Misión",
+      chart_x: "Presión Ambiente (psi)",
+      chart_y: "Concentración de Oxígeno (% O₂)",
+      theme_to_light: "Claro",
+      theme_to_dark: "Oscuro"
+    }
+  };
+
+  // Referencias DOM
+  const langToggleBtn = document.getElementById("btn-lang-toggle");
+  const themeToggleBtn = document.getElementById("btn-theme-toggle");
   const habitatBtns = document.querySelectorAll("#dashboard .habitat-btn");
   const rankingBody = document.getElementById("db-ranking-body");
   const testsBody = document.getElementById("db-tests-body");
@@ -16,7 +134,91 @@
   const siAnswer = document.getElementById("db-si-answer");
   const vectorCards = document.getElementById("db-vector-cards");
 
-  // 1. Selector de Hábitat Espacial
+  // =========================================================
+  // A. Gestión de Tema (Dark / Light)
+  // =========================================================
+  function applyTheme(theme) {
+    currentTheme = theme;
+    localStorage.setItem("flame_theme", theme);
+    const isLight = theme === "light";
+    document.body.classList.toggle("light-theme", isLight);
+
+    const iconSun = document.getElementById("icon-sun");
+    const iconMoon = document.getElementById("icon-moon");
+    const themeLabel = document.getElementById("theme-label");
+
+    if (iconSun && iconMoon && themeLabel) {
+      iconSun.hidden = !isLight;
+      iconMoon.hidden = isLight;
+      themeLabel.textContent = isLight ? I18N[currentLang].theme_to_dark : I18N[currentLang].theme_to_light;
+    }
+
+    if (allTestsCache.length > 0) {
+      renderEnvelopeChart(allTestsCache);
+    }
+  }
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      applyTheme(currentTheme === "dark" ? "light" : "dark");
+    });
+  }
+
+  // =========================================================
+  // B. Gestión de Idioma (EN por defecto / ES)
+  // =========================================================
+  function applyLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem("flame_lang", lang);
+    document.documentElement.lang = lang;
+
+    const dict = I18N[lang];
+
+    // Actualizar indicadores EN / ES en el navbar
+    document.querySelectorAll(".navbar .lang-pill").forEach((pill) => {
+      pill.classList.toggle("active", pill.dataset.lang === lang);
+    });
+
+    // Traducir elementos etiquetados con data-i18n
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.dataset.i18n;
+      if (dict[key]) {
+        el.textContent = dict[key];
+      }
+    });
+
+    // Actualizar placeholder y pregunta por defecto si no fue editada manualmente
+    siInput.placeholder = dict.input_placeholder;
+    const prevDefault = lang === "es" ? I18N.en.default_query : I18N.es.default_query;
+    if (siInput.value.trim() === prevDefault || siInput.value.trim() === "") {
+      siInput.value = dict.default_query;
+    }
+
+    // Actualizar texto del botón de tema
+    const themeLabel = document.getElementById("theme-label");
+    if (themeLabel) {
+      themeLabel.textContent = currentTheme === "light" ? dict.theme_to_dark : dict.theme_to_light;
+    }
+
+    // Re-renderizar componentes dinámicos con etiquetas del idioma activo
+    renderTestsTable(testPsiFilter.value);
+    if (selectedPsiId) {
+      loadInvestigationDetail(selectedPsiId);
+    }
+    if (allTestsCache.length > 0) {
+      renderEnvelopeChart(allTestsCache);
+    }
+  }
+
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener("click", () => {
+      applyLanguage(currentLang === "en" ? "es" : "en");
+    });
+  }
+
+  // =========================================================
+  // C. Eventos del Dashboard (Hábitats, Chips, Formulario)
+  // =========================================================
   habitatBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       habitatBtns.forEach((b) => b.classList.remove("active"));
@@ -27,15 +229,14 @@
     });
   });
 
-  // 2. Chips de consulta rápida
   document.querySelectorAll("#dashboard .db-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
-      siInput.value = chip.dataset.query;
-      runSIInterpretation(chip.dataset.query);
+      const queryToRun = currentLang === "es" ? chip.dataset.queryEs : chip.dataset.queryEn;
+      siInput.value = queryToRun;
+      runSIInterpretation(queryToRun);
     });
   });
 
-  // 3. Formulario del Intérprete SI
   siForm.addEventListener("submit", (e) => {
     e.preventDefault();
     runSIInterpretation(siInput.value);
@@ -49,13 +250,14 @@
     renderTestsTable(testPsiFilter.value);
   });
 
-  // Cargar Ranking desde MySQL
+  // =========================================================
+  // D. Consumo de Endpoints (MySQL + Qdrant + Gemini)
+  // =========================================================
   async function loadRanking() {
     try {
       const res = await fetch(`${API_BASE}/api/ranking?habitat=${currentHabitat}`);
       const data = await res.json();
 
-      // Actualizar KPIs
       document.getElementById("kpi-total-inv").textContent = data.length;
       if (data.length > 0) {
         document.getElementById("kpi-top-study").textContent = `${data[0].psi_id}`;
@@ -64,13 +266,11 @@
         document.getElementById("kpi-max-o2").textContent = `${maxO2}% O₂`;
       }
 
-      // Poblar selector de filtro de pruebas
       const currentSelected = testPsiFilter.value;
-      testPsiFilter.innerHTML = `<option value="">All Investigations (${data.length})</option>` +
+      testPsiFilter.innerHTML = `<option value="">${I18N[currentLang].all_inv_opt} (${data.length})</option>` +
         data.map((d) => `<option value="${d.psi_id}">${d.psi_id} — ${d.acronym}</option>`).join("");
       testPsiFilter.value = currentSelected;
 
-      // Renderizar tabla de Ranking
       rankingBody.innerHTML = data.map((row) => `
         <tr data-psi="${row.psi_id}">
           <td><span class="psi-pill">${row.psi_id}</span></td>
@@ -82,26 +282,25 @@
         </tr>
       `).join("");
 
-      // Evento click en filas para abrir Deep-Dive
       rankingBody.querySelectorAll("tr").forEach((tr) => {
         tr.addEventListener("click", () => {
           rankingBody.querySelectorAll("tr").forEach((r) => r.classList.remove("selected-row"));
           tr.classList.add("selected-row");
-          loadInvestigationDetail(tr.dataset.psi);
+          selectedPsiId = tr.dataset.psi;
+          loadInvestigationDetail(selectedPsiId);
         });
       });
 
-      // Seleccionar automáticamente el primero en el inspector
       if (data.length > 0) {
         rankingBody.querySelector("tr")?.classList.add("selected-row");
-        loadInvestigationDetail(data[0].psi_id);
+        selectedPsiId = data[0].psi_id;
+        loadInvestigationDetail(selectedPsiId);
       }
     } catch (err) {
-      rankingBody.innerHTML = `<tr><td colspan="6" class="db-muted">Error conectando con MySQL en ${API_BASE}/api/ranking. Verifica que main_api.py esté activo.</td></tr>`;
+      rankingBody.innerHTML = `<tr><td colspan="6" class="db-muted">Error connecting to MySQL at ${API_BASE}/api/ranking. Verify main_api.py is running.</td></tr>`;
     }
   }
 
-  // Cargar Pruebas Experimentales desde MySQL y renderizar gráfico
   async function loadTests() {
     try {
       const res = await fetch(`${API_BASE}/api/tests`);
@@ -109,7 +308,7 @@
       renderTestsTable("");
       renderEnvelopeChart(allTestsCache);
     } catch (err) {
-      testsBody.innerHTML = `<tr><td colspan="7" class="db-muted">No se pudieron cargar las pruebas experimentales.</td></tr>`;
+      testsBody.innerHTML = `<tr><td colspan="7" class="db-muted">Could not load experimental runs.</td></tr>`;
     }
   }
 
@@ -119,7 +318,7 @@
       : allTestsCache;
 
     if (filtered.length === 0) {
-      testsBody.innerHTML = `<tr><td colspan="7" class="db-muted">Sin corridas tabulares registradas para este filtro.</td></tr>`;
+      testsBody.innerHTML = `<tr><td colspan="7" class="db-muted">${I18N[currentLang].no_tests}</td></tr>`;
       return;
     }
 
@@ -136,10 +335,15 @@
     `).join("");
   }
 
-  // Gráfico Chart.js: Presión (psi) vs Oxígeno (%)
   function renderEnvelopeChart(tests) {
     const ctx = document.getElementById("db-envelope-chart");
     if (!ctx || typeof Chart === "undefined") return;
+
+    const isLight = currentTheme === "light";
+    const textColor = isLight ? "#334155" : "#94a3b8";
+    const legendColor = isLight ? "#0f172a" : "#cbd5e1";
+    const gridColor = isLight ? "rgba(15, 23, 42, 0.1)" : "rgba(148, 163, 184, 0.12)";
+    const dict = I18N[currentLang];
 
     const psiPoints = tests.map((t) => ({
       x: Number(t.ambient_pressure_psi),
@@ -160,19 +364,19 @@
       data: {
         datasets: [
           {
-            label: "PSI Experimental Runs (MySQL)",
+            label: dict.chart_ds_psi,
             data: psiPoints,
-            backgroundColor: "#38bdf8",
-            borderColor: "#e0f2fe",
+            backgroundColor: isLight ? "#0284c7" : "#38bdf8",
+            borderColor: isLight ? "#0369a1" : "#e0f2fe",
             borderWidth: 1,
             pointRadius: 7,
             pointHoverRadius: 9
           },
           {
-            label: "Mission Reference Envelopes",
+            label: dict.chart_ds_ref,
             data: referenceEnvironments,
-            backgroundColor: "#fbbf24",
-            borderColor: "#fef3c7",
+            backgroundColor: isLight ? "#d97706" : "#fbbf24",
+            borderColor: isLight ? "#92400e" : "#fef3c7",
             pointStyle: "rectRot",
             pointRadius: 8,
             pointHoverRadius: 10
@@ -183,7 +387,7 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: "#cbd5e1", font: { family: "Inter", size: 11 } } },
+          legend: { labels: { color: legendColor, font: { family: "Inter", size: 11 } } },
           tooltip: {
             callbacks: {
               label: (context) => `${context.raw.label}: ${context.raw.x} psi | ${context.raw.y}% O₂`
@@ -192,16 +396,16 @@
         },
         scales: {
           x: {
-            title: { display: true, text: "Ambient Pressure (psi)", color: "#94a3b8" },
-            ticks: { color: "#94a3b8" },
-            grid: { color: "rgba(148, 163, 184, 0.12)" },
+            title: { display: true, text: dict.chart_x, color: textColor },
+            ticks: { color: textColor },
+            grid: { color: gridColor },
             min: 0,
             max: 18
           },
           y: {
-            title: { display: true, text: "Oxygen Concentration (% O₂)", color: "#94a3b8" },
-            ticks: { color: "#94a3b8" },
-            grid: { color: "rgba(148, 163, 184, 0.12)" },
+            title: { display: true, text: dict.chart_y, color: textColor },
+            ticks: { color: textColor },
+            grid: { color: gridColor },
             min: 0,
             max: 105
           }
@@ -210,10 +414,10 @@
     });
   }
 
-  // Inspección detallada (MySQL + Qdrant)
   async function loadInvestigationDetail(psiId) {
     const badge = document.getElementById("insp-psi-badge");
     const container = document.getElementById("db-inspector-content");
+    const dict = I18N[currentLang];
     badge.textContent = psiId;
 
     try {
@@ -228,31 +432,30 @@
 
       const vectorSummary = data.vector_notes && data.vector_notes.length > 0
         ? data.vector_notes[0].text
-        : "Sin resumen vectorial adicional cargado aún para este ID.";
+        : dict.insp_no_notes;
 
       container.innerHTML = `
         <strong>${inv.title}</strong>
         <div class="insp-meta-grid">
-          <div class="insp-meta-item"><span>Platform / Type</span>${inv.flight_platform} (${inv.project_type})</div>
-          <div class="insp-meta-item"><span>Safety Pillar</span>${inv.safety_pillar}</div>
+          <div class="insp-meta-item"><span>${dict.insp_platform}</span>${inv.flight_platform} (${inv.project_type})</div>
+          <div class="insp-meta-item"><span>${dict.insp_pillar}</span>${inv.safety_pillar}</div>
           <div class="insp-meta-item"><span>Hardware</span>${inv.hardware_rack} — ${inv.hardware_apparatus}</div>
           <div class="insp-meta-item"><span>Dataset DOI</span>${doiHtml}</div>
         </div>
         <p class="db-muted" style="margin: 0.5rem 0 0;">${vectorSummary}</p>
       `;
     } catch (err) {
-      container.innerHTML = `<p class="db-muted">No se pudo cargar el detalle de ${psiId}.</p>`;
+      container.innerHTML = `<p class="db-muted">Could not load details for ${psiId}.</p>`;
     }
   }
 
-  // Ejecutar Intérprete SI (/api/interpret)
   async function runSIInterpretation(queryText) {
     const q = (queryText || "").trim();
     if (!q) return;
 
-    siAnswer.textContent = "Consultando vectores en Qdrant y métricas en MySQL...";
+    siAnswer.textContent = I18N[currentLang].loading_si;
     const phase = phaseFilter.value;
-    const url = `${API_BASE}/api/interpret?q=${encodeURIComponent(q)}&habitat=${encodeURIComponent(currentHabitat)}`
+    const url = `${API_BASE}/api/interpret?q=${encodeURIComponent(q)}&habitat=${encodeURIComponent(currentHabitat)}&ui_lang=${currentLang}`
               + (phase ? `&fuel_phase=${encodeURIComponent(phase)}` : "");
 
     try {
@@ -271,11 +474,13 @@
         </div>
       `).join("");
     } catch (err) {
-      siAnswer.textContent = "Error al consultar el intérprete SI. Asegúrate de que python main_api.py esté ejecutándose.";
+      siAnswer.textContent = "Error querying SI interpreter. Make sure python main_api.py is running.";
     }
   }
 
-  // Inicialización al cargar la página
+  // Inicialización respetando preferencias (Inglés + Oscuro por defecto)
+  applyTheme(currentTheme);
+  applyLanguage(currentLang);
   loadRanking();
   loadTests();
   runSIInterpretation(siInput.value);
