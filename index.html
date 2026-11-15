@@ -87,9 +87,164 @@
 
 <!-- Dashboard con datos de la nasa // SI powered -->
 <section class="dashboard-section" id="dashboard">
-  <div class="placeholder-box">
-    <h2>DASHBOARD - PLACEHOLDER</h2>
-    <p>Placeholder</p>
+  <div class="db-container">
+    <!-- Encabezado y Selector de Hábitat Espacial -->
+    <div class="db-header">
+      <div>
+        <span class="db-badge">SI-POWERED • MYSQL + QDRANT + MCP</span>
+        <h2 class="db-title">COMBUSTION &amp; FIRE SAFETY INTELLIGENCE</h2>
+        <p class="db-subtitle">Análisis comparativo de inflamabilidad en microgravedad (0g) y acotación para hábitats de gravedad parcial.</p>
+      </div>
+
+      <div class="db-habitat-controls" role="group" aria-label="Target Space Environment">
+        <button type="button" class="habitat-btn active" data-habitat="lunar_base">
+          <span class="hab-name">Lunar Base / Rover</span>
+          <span class="hab-spec">&ge;30% O&#8322; &bull; &le;10.2 psi &bull; 0.16g</span>
+        </button>
+        <button type="button" class="habitat-btn" data-habitat="spacesuit">
+          <span class="hab-name">EVA Spacesuit</span>
+          <span class="hab-spec">100% O&#8322; &bull; 4.3 psi</span>
+        </button>
+        <button type="button" class="habitat-btn" data-habitat="iss">
+          <span class="hab-name">ISS / Spacecraft</span>
+          <span class="hab-spec">21% O&#8322; &bull; 14.7 psi &bull; 0g</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPIs Dinámicos -->
+    <div class="db-kpi-grid">
+      <div class="db-kpi-card">
+        <span class="kpi-label">PSI Investigations</span>
+        <strong class="kpi-value" id="kpi-total-inv">--</strong>
+        <span class="kpi-foot">Indexadas en MySQL &amp; Qdrant</span>
+      </div>
+      <div class="db-kpi-card">
+        <span class="kpi-label">Top Habitat Match</span>
+        <strong class="kpi-value kpi-accent" id="kpi-top-study">--</strong>
+        <span class="kpi-foot" id="kpi-top-score">Calculando afinidad...</span>
+      </div>
+      <div class="db-kpi-card">
+        <span class="kpi-label">Peak O&#8322; Tested</span>
+        <strong class="kpi-value kpi-warn" id="kpi-max-o2">--</strong>
+        <span class="kpi-foot">Máx. concentración en microgravedad</span>
+      </div>
+      <div class="db-kpi-card">
+        <span class="kpi-label">Partial-g Bounding</span>
+        <strong class="kpi-value">0g &harr; 1g</strong>
+        <span class="kpi-foot">Acotado vía E-FIELD Flames</span>
+      </div>
+    </div>
+
+    <!-- Consola Semántica SI (Qdrant + MySQL) -->
+    <div class="db-panel db-si-console">
+      <div class="panel-head">
+        <h3>SI Semantic Interpreter &amp; Vector Retrieval</h3>
+        <select id="db-phase-filter" class="db-select" aria-label="Filter by fuel phase">
+          <option value="">All Fuel Phases</option>
+          <option value="Gaseous">Gaseous</option>
+          <option value="Liquid">Liquid</option>
+          <option value="Solid">Solid</option>
+        </select>
+      </div>
+
+      <form id="db-si-form" class="db-si-form">
+        <input type="text" id="db-si-input" class="db-input"
+               placeholder="Consulta sobre llamas frías, hollín en 0g, supresión con CO2 o condiciones de Base Lunar..."
+               value="¿Qué investigaciones aplican a atmósferas enriquecidas en oxígeno para la Base Lunar?" />
+        <button type="submit" class="db-btn-primary" id="db-si-submit">Analyze with SI</button>
+      </form>
+
+      <div class="db-chips">
+        <button type="button" class="db-chip" data-query="atmósferas enriquecidas en oxígeno para Base Lunar">Alto O&#8322; Base Lunar</button>
+        <button type="button" class="db-chip" data-query="extinción de gotas líquidas con CO2 y Helio en FLEX">Supresión en Gotas (FLEX)</button>
+        <button type="button" class="db-chip" data-query="inflamabilidad de sólidos y flujo de aire en BASS-II">Sólidos y Ventilación (BASS-II)</button>
+        <button type="button" class="db-chip" data-query="formación de hollín y temperatura de llama en SPICE">Hollín en Microgravedad (SPICE)</button>
+      </div>
+
+      <div class="db-si-output">
+        <div class="si-synthesis-box">
+          <span class="si-tag">SI SYNTHESIS</span>
+          <p id="db-si-answer">Conectando con servidor FastAPI / Qdrant...</p>
+        </div>
+        <div id="db-vector-cards" class="db-vector-grid"></div>
+      </div>
+    </div>
+
+    <!-- Grid Principal: Ranking MySQL + Gráfico Presión vs O2 -->
+    <div class="db-main-grid">
+      <!-- Tabla de Ranking -->
+      <div class="db-panel">
+        <div class="panel-head">
+          <h3>Habitat Relevance Ranking</h3>
+          <span class="panel-hint">Haz clic en una fila para inspeccionar</span>
+        </div>
+        <div class="db-table-wrap">
+          <table class="db-table">
+            <thead>
+              <tr>
+                <th>PSI ID</th>
+                <th>Acronym</th>
+                <th>Phase</th>
+                <th>Hardware</th>
+                <th>Max O&#8322;</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody id="db-ranking-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Gráfico de Dispersión Atmosférica -->
+      <div class="db-panel">
+        <div class="panel-head">
+          <h3>Atmospheric Envelope: Pressure vs. O&#8322;</h3>
+          <span class="panel-hint">Zona Lunar &le;10.2 psi / &ge;30% O&#8322;</span>
+        </div>
+        <div class="db-chart-wrap">
+          <canvas id="db-envelope-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspector de Investigación Seleccionada + Tabla de Pruebas Experimentales -->
+    <div class="db-main-grid">
+      <div class="db-panel" id="db-inspector-panel">
+        <div class="panel-head">
+          <h3>Investigation Deep-Dive</h3>
+          <span class="panel-hint" id="insp-psi-badge">Selecciona un estudio</span>
+        </div>
+        <div id="db-inspector-content" class="db-inspector-body">
+          <p class="db-muted">Selecciona cualquier investigación de la tabla de ranking para ver su DOI, plataforma de vuelo, aparato experimental y notas vectoriales.</p>
+        </div>
+      </div>
+
+      <div class="db-panel">
+        <div class="panel-head">
+          <h3>Normalized Experimental Runs (MySQL)</h3>
+          <select id="db-test-psi-filter" class="db-select" aria-label="Filter tests by PSI ID">
+            <option value="">All Investigations</option>
+          </select>
+        </div>
+        <div class="db-table-wrap">
+          <table class="db-table db-table-compact">
+            <thead>
+              <tr>
+                <th>Test ID</th>
+                <th>PSI</th>
+                <th>Fuel / Geometry</th>
+                <th>Press.</th>
+                <th>O&#8322;</th>
+                <th>Airflow</th>
+                <th>Outcome</th>
+              </tr>
+            </thead>
+            <tbody id="db-tests-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -201,5 +356,6 @@
 </footer>
 
 <script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
 </body>
 </html>
