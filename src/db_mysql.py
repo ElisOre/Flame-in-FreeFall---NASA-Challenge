@@ -7,7 +7,7 @@ def get_connection():
     return mysql.connector.connect(**Config.MYSQL_CONFIG)
 
 def _clean_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Convierte Decimal a float para que FastAPI y FastMCP puedan serializar a JSON."""
+    """Convierte Decimal a float para que FastAPI y FastMCP serialicen a JSON sin errores."""
     return [
         {k: (float(v) if isinstance(v, Decimal) else v) for k, v in row.items()}
         for row in rows
@@ -18,13 +18,15 @@ def filter_tests(
     fuel_material: Optional[str] = None,
     min_o2_pct: Optional[float] = None,
     max_pressure_psi: Optional[float] = None,
-    limit: int = 25
+    limit: int = 50
 ) -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    
+
     sql = """
-        SELECT t.*, i.acronym, i.safety_pillar 
+        SELECT 
+            t.*, i.acronym, i.title AS investigation_title, i.doi,
+            i.safety_pillar, i.fuel_phase, i.hardware_rack, i.hardware_apparatus
         FROM experimental_tests t
         JOIN investigations i ON t.psi_id = i.psi_id
         WHERE 1=1
@@ -42,10 +44,10 @@ def filter_tests(
     if max_pressure_psi is not None:
         sql += " AND t.ambient_pressure_psi <= %s"
         params.append(max_pressure_psi)
-        
-    sql += " ORDER BY t.o2_percentage DESC LIMIT %s"
+
+    sql += " ORDER BY t.o2_percentage DESC, t.ambient_pressure_psi ASC LIMIT %s"
     params.append(limit)
-    
+
     cursor.execute(sql, tuple(params))
     data = _clean_rows(cursor.fetchall())
     cursor.close()
@@ -55,10 +57,12 @@ def filter_tests(
 def rank_investigations_by_habitat(target_o2: float) -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
+    # Compatible con MySQL 8+ ONLY_FULL_GROUP_BY
     sql = """
         SELECT 
-            i.psi_id, i.acronym, i.title, i.fuel_phase, i.safety_pillar,
-            i.hardware_rack, i.max_o2_tested_pct, i.simulates_partial_gravity,
+            i.psi_id, i.acronym, i.title, i.doi, i.project_type, i.flight_platform,
+            i.fuel_phase, i.safety_pillar, i.hardware_rack, i.hardware_apparatus,
+            i.max_o2_tested_pct, i.simulates_partial_gravity,
             COUNT(t.test_uid) AS total_tests,
             ROUND(
                 CASE WHEN i.max_o2_tested_pct >= %s THEN 40 ELSE (i.max_o2_tested_pct / %s) * 40 END +
@@ -67,7 +71,10 @@ def rank_investigations_by_habitat(target_o2: float) -> List[Dict[str, Any]]:
             ) AS relevance_score
         FROM investigations i
         LEFT JOIN experimental_tests t ON i.psi_id = t.psi_id
-        GROUP BY i.psi_id
+        GROUP BY 
+            i.psi_id, i.acronym, i.title, i.doi, i.project_type, i.flight_platform,
+            i.fuel_phase, i.safety_pillar, i.hardware_rack, i.hardware_apparatus,
+            i.max_o2_tested_pct, i.simulates_partial_gravity
         ORDER BY relevance_score DESC
     """
     cursor.execute(sql, (target_o2, target_o2))
@@ -75,3 +82,20 @@ def rank_investigations_by_habitat(target_o2: float) -> List[Dict[str, Any]]:
     cursor.close()
     conn.close()
     return data
+
+def get_investigation_detail(psi_id: str) -> Dict[str, Any]:
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM investigations WHERE psi_id = %s", (psi_id,))
+    inv_rows = _clean_rows(cursor.fetchall())
+    investigation = inv_rows[0] if inv_rows else None
+
+    tests = filter_tests(psi_id=psi_id, limit=50)
+    cursor.close()
+    conn.close()
+
+    return {
+        "investigation": investigation,
+        "tests": tests
+    }
