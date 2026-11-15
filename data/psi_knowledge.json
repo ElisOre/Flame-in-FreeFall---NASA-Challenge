@@ -5,7 +5,8 @@
     "acronym": "SPICE Re-Analysis",
     "fuel_phase": "Gaseous",
     "safety_pillar": "Predictive Modeling",
-    "text": "Integración de métodos computacionales y experimentales sobre más de 1600 imágenes DSLR RAW del experimento SPICE para derivar temperatura y fracciones de volumen de hollín en quemadores Yale y ACME. Explica por qué en microgravedad (0g) las llamas son más largas, difusas, frías y con más hollín que en 1g."
+    "text_en": "Integration of computational and experimental methods across 1,600+ raw DSLR images from the SPICE experiment to derive temperature fields and soot volume fractions in Yale and ACME burners. Explains why microgravity (0g) flames are longer, more diffuse, cooler, and produce higher soot concentrations than in 1g.",
+    "text_es": "Integración de métodos computacionales y experimentales sobre más de 1600 imágenes DSLR RAW del experimento SPICE para derivar temperatura y fracciones de volumen de hollín en quemadores Yale y ACME. Explica por qué en microgravedad (0g) las llamas son más largas, difusas, frías y con más hollín que en 1g."
   },
   {
     "id": 2,
@@ -13,7 +14,8 @@
     "acronym": "FLEX",
     "fuel_phase": "Liquid",
     "safety_pillar": "Suppression",
-    "text": "Flame Extinguishment Experiment (FLEX) evalúa límites de inflamabilidad de gotas líquidas (metanol y heptano) en el rack CIR usando el aparato MDCA. Mide la eficacia de supresores CO2, Helio (He), SF6 y N2, tasas de quemado y diámetros de extinción radiativa."
+    "text_en": "Flame Extinguishment Experiment (FLEX) maps flammability limits of liquid fuel droplets (methanol and heptane) inside the CIR rack using the MDCA apparatus. Evaluates the effectiveness of gaseous suppressants including CO2, Helium (He), SF6, and N2, measuring burning rates and radiative extinction diameters.",
+    "text_es": "Flame Extinguishment Experiment (FLEX) evalúa límites de inflamabilidad de gotas líquidas (metanol y heptano) en el rack CIR usando el aparato MDCA. Mide la eficacia de supresores CO2, Helio (He), SF6 y N2, tasas de quemado y diámetros de extinción radiativa."
   },
   {
     "id": 3,
@@ -21,7 +23,8 @@
     "acronym": "BASS-II",
     "fuel_phase": "Solid",
     "safety_pillar": "Prevention",
-    "text": "Burning and Suppression of Solids II (BASS-II) estudia la ignición, propagación y extinción de sólidos (PMMA, telas SIBAL, celulosa) en el MSG con flujos de aire de hasta 40 cm/s. Demuestra que con ventilación los materiales arden igual o mejor en microgravedad que en la Tierra."
+    "text_en": "Burning and Suppression of Solids II (BASS-II) investigates ignition, flame spread, and extinction of solid materials (PMMA acrylic, SIBAL fabrics, cellulose) inside the Microgravity Science Glovebox (MSG) under forced airflows up to 40 cm/s. Demonstrates that with ventilation, solids in microgravity can burn as fast or faster than on Earth.",
+    "text_es": "Burning and Suppression of Solids II (BASS-II) estudia la ignición, propagación y extinción de sólidos (PMMA, telas SIBAL, celulosa) en el MSG con flujos de aire de hasta 40 cm/s. Demuestra que con ventilación los materiales arden igual o mejor en microgravedad que en la Tierra."
   },
   {
     "id": 4,
@@ -29,6 +32,7 @@
     "acronym": "ACME CFI-G",
     "fuel_phase": "Gaseous",
     "safety_pillar": "Prevention",
-    "text": "Cool Flames Investigation with Gases (CFI-G) probó las concentraciones de oxígeno más altas en microgravedad (hasta 85% O2) con propano, butano y pentano en quemador esférico. Es clave para hábitats lunares y rovers (>=30% O2 y <=10.2 psi)."
+    "text_en": "Cool Flames Investigation with Gases (CFI-G) conducted the highest oxygen concentration microgravity tests in PSI (up to 85% O2) using a spherical porous burner with propane, butane, and pentane. Essential for modeling oxygen-enriched atmospheres in Lunar bases and pressurized rovers (>=30% O2 and <=10.2 psi).",
+    "text_es": "Cool Flames Investigation with Gases (CFI-G) probó las concentraciones de oxígeno más altas en microgravedad (hasta 85% O2) con propano, butano y pentano en quemador esférico. Es clave para hábitats lunares y rovers (>=30% O2 y <=10.2 psi)."
   }
 ]
