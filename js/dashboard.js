@@ -1,5 +1,5 @@
 (() => {
-  const API_BASE = window.location.origin;
+  const API_BASE = window.location.port === "8000" ? "" : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:8000" : "");
 
   let currentLang = localStorage.getItem("flame_lang") || "en";
   let currentTheme = localStorage.getItem("flame_theme") || "dark";
