@@ -608,8 +608,16 @@ body.light-theme .member-gh {
   color: #0284c7 !important;
 }
 
+#dashboard .si-synthesis-box {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 0.75rem;
+}
+
 #dashboard .si-synthesis-box p {
   white-space: pre-line;
+  word-break: break-word;
+  line-height: 1.6;
 }
 
 #dashboard .si-chart-box {

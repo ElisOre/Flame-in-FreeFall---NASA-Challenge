@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import urllib.error
 import urllib.request
@@ -13,7 +14,7 @@ from src.config import Config
 from src.db_mysql import filter_tests, rank_investigations_by_habitat, get_investigation_detail
 from src.db_qdrant import semantic_search, qdrant
 
-app = FastAPI(title="NASA Flame in Freefall Dashboard API")
+app = FastAPI(title="Zero-G FireLens — NASA Fire Safety Dashboard API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,6 +22,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 def detect_query_language(text: str, fallback: str = "en") -> str:
     """Detecta si la consulta está en español ('es') o inglés ('en') para el modo fallback."""
@@ -42,10 +44,115 @@ def detect_query_language(text: str, fallback: str = "en") -> str:
         return "en"
     return fallback if fallback in ("en", "es") else "en"
 
+
+def _get_available_groq_models(groq_key: str) -> list[str]:
+    """Prioriza modelos rápidos de respuesta directa (sin gasto oculto de tokens de razonamiento)."""
+    preferred = [
+        "llama-3.1-8b-instant",
+        "meta-llama/llama-4-scout-17b-16e-instruct",
+        "gemma2-9b-it",
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-120b",
+        "qwen/qwen3-32b"
+    ]
+    try:
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/models",
+            headers={
+                "Authorization": f"Bearer {groq_key}",
+                "User-Agent": "ZeroG-FireLens/1.0"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            active_ids = [
+                m["id"] for m in data.get("data", [])
+                if "whisper" not in m["id"] and "guard" not in m["id"] and "tts" not in m["id"]
+            ]
+            ordered = [m for m in preferred if m in active_ids]
+            others = [m for m in active_ids if m not in ordered]
+            return ordered + others
+    except Exception:
+        return preferred
+
+
+def _clean_llm_output(text: str) -> str:
+    """Elimina bloques internos <think>...</think> si el modelo los incluye."""
+    cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    return cleaned or text.strip()
+
+
+def generate_si_analysis(prompt: str, fallback_summary: str) -> str:
+    """Intenta responder con Groq y Gemini con margen amplio de tokens para no cortar respuestas."""
+    groq_key = os.getenv("GROQ_API_KEY", "").strip()
+    gemini_key = (Config.LLM_API_KEY or "").strip()
+
+    if groq_key:
+        groq_models = _get_available_groq_models(groq_key)
+        for model in groq_models[:4]:
+            try:
+                groq_payload = json.dumps({
+                    "model": model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.2,
+                    "max_tokens": 1400
+                }).encode("utf-8")
+
+                req = urllib.request.Request(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    data=groq_payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {groq_key}",
+                        "User-Agent": "ZeroG-FireLens/1.0"
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    result = json.loads(resp.read().decode("utf-8"))
+                    msg = result["choices"][0]["message"]
+                    raw_content = msg.get("content") or ""
+                    cleaned = _clean_llm_output(raw_content)
+                    if cleaned:
+                        print(f"[Groq OK] Respuesta generada con {model} ({len(cleaned)} chars)")
+                        return cleaned
+                    print(f"[Groq Warning] {model} devolvió content vacío, probando siguiente...")
+            except urllib.error.HTTPError as e:
+                print(f"[Groq Error {e.code} en {model}]: {e.read().decode('utf-8', errors='ignore')}")
+            except Exception as e:
+                print(f"[Groq Connection Error en {model}]: {e}")
+
+    if gemini_key:
+        gemini_payload = json.dumps({
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1400}
+        }).encode("utf-8")
+
+        for model in ["gemini-2.5-flash", "gemini-2.5-flash-lite"]:
+            try:
+                if gemini_key.startswith("AQ."):
+                    url = f"https://aiplatform.googleapis.com/v1/publishers/google/models/{model}:generateContent?key={gemini_key}"
+                else:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
+
+                req = urllib.request.Request(
+                    url,
+                    data=gemini_payload,
+                    headers={"Content-Type": "application/json", "Referer": "http://localhost:8000/"}
+                )
+                with urllib.request.urlopen(req, timeout=12) as resp:
+                    result = json.loads(resp.read().decode("utf-8"))
+                    return _clean_llm_output(result["candidates"][0]["content"]["parts"][0]["text"])
+            except Exception:
+                continue
+
+    return fallback_summary
+
+
 @app.get("/api/ranking")
 def api_get_ranking(habitat: str = "lunar_base"):
     o2_map = {"lunar_base": 30.0, "spacesuit": 100.0, "iss": 21.0}
     return rank_investigations_by_habitat(o2_map.get(habitat, 30.0))
+
 
 @app.get("/api/tests")
 def api_get_tests(
@@ -56,9 +163,11 @@ def api_get_tests(
 ):
     return filter_tests(psi_id, fuel_material, min_o2_pct, max_pressure_psi)
 
+
 @app.get("/api/search")
 def api_semantic_search(q: str, fuel_phase: Optional[str] = None):
     return semantic_search(query=q, fuel_phase=fuel_phase)
+
 
 @app.get("/api/investigation/{psi_id}")
 def api_investigation_detail(psi_id: str):
@@ -70,6 +179,7 @@ def api_investigation_detail(psi_id: str):
     )
     detail["vector_notes"] = [p.payload for p in points]
     return detail
+
 
 @app.get("/api/interpret")
 def api_si_interpret(
@@ -90,7 +200,6 @@ def api_si_interpret(
     related_tests = []
     for pid in matched_psi_ids[:3]:
         related_tests.extend(filter_tests(psi_id=pid, limit=6))
-    # Si las investigaciones vectoriales no tienen corridas tabulares propias (ej. PSI-60), traer muestra general
     if not related_tests:
         related_tests = filter_tests(limit=8)
 
@@ -116,54 +225,21 @@ def api_si_interpret(
             + "Partial-gravity note: 0g (ISS) and 1g results bound expected fire behavior in lunar (0.16g) and Martian (0.38g) gravity."
         )
 
-    ai_interpretation = fallback_summary
+    prompt_text = (
+        "You are a NASA spacecraft fire safety specialist (Zero-G FireLens project). "
+        "CRITICAL RULE: Detect the language of 'User question' and write your ENTIRE response strictly in THAT exact language.\n"
+        "Write a concise, complete technical summary (strictly 130-160 words, never cut mid-sentence) using 3 short bullet points:\n"
+        "- **Microgravity Physics:** Key findings from Qdrant,\n"
+        "- **Test Metrics:** Exact O2%, pressure (psi), airflow, and burning/spread rates from MySQL,\n"
+        "- **Habitat & Partial-g Safety:** Actionable takeaway for the target environment (0g vs 1g bounding).\n"
+        "Ground every number strictly in the data below:\n"
+        f"User question: {q}\n"
+        f"Target environment: {habitat} ({target_o2}% O2)\n"
+        f"Qdrant context: {json.dumps(vector_hits, ensure_ascii=False)}\n"
+        f"MySQL tests: {json.dumps(related_tests, ensure_ascii=False)}"
+    )
 
-    api_key = (Config.LLM_API_KEY or "").strip()
-
-    if api_key:
-        try:
-            prompt = (
-                "You are a NASA spacecraft fire safety specialist (Flame in Freefall project). "
-                "CRITICAL RULE: Detect the language of 'User question' and write your ENTIRE response strictly in THAT exact language.\n"
-                "Provide a thorough, structured technical analysis (220-320 words) organized with clear bullet points covering:\n"
-                "1) Key experimental findings & physics in microgravity (0g),\n"
-                "2) Quantitative comparison of O2%, pressure (psi), airflow, and burning/spread rates from the retrieved tests,\n"
-                "3) Engineering implications for crew habitat safety and partial-gravity bounding (0g vs 1g).\n"
-                "Ground every metric strictly in the retrieved data below:\n"
-                f"User question: {q}\n"
-                f"Target environment: {habitat} ({target_o2}% O2)\n"
-                f"Qdrant semantic context: {json.dumps(vector_hits, ensure_ascii=False)}\n"
-                f"Related MySQL test runs: {json.dumps(related_tests, ensure_ascii=False)}"
-            )
-
-            # Enrutamiento automático según el tipo de clave de Google
-            if api_key.startswith("AQ."):
-                # Clave de Vertex AI Express Mode (Google Cloud)
-                url = f"https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent?key={api_key}"
-            else:
-                # Clave estándar de Google AI Studio (AIzaSy...)
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-
-            # ... (misma URL y payload, aumentando maxOutputTokens a 900)
-            payload = json.dumps({
-                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.25,
-                    "maxOutputTokens": 900
-                }
-            }).encode("utf-8")
-
-            req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                result = json.loads(resp.read().decode("utf-8"))
-                ai_interpretation = result["candidates"][0]["content"]["parts"][0]["text"]
-        except urllib.error.HTTPError as e:
-            error_body = e.read().decode("utf-8", errors="ignore")
-            print(f"[Gemini API Error {e.code}]: {error_body}")
-            ai_interpretation = fallback_summary
-        except Exception as e:
-            print(f"[Gemini Connection Error]: {e}")
-            ai_interpretation = fallback_summary
+    ai_interpretation = generate_si_analysis(prompt_text, fallback_summary)
 
     return {
         "query": q,
@@ -174,6 +250,7 @@ def api_si_interpret(
         "related_tests": related_tests,
         "top_ranked_psi_id": top_rank["psi_id"] if top_rank else None
     }
+
 
 app.mount("/", StaticFiles(directory=str(Config.DATA_DIR.parent), html=True), name="frontend")
 

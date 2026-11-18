@@ -601,7 +601,12 @@
       const res = await fetch(url);
       const data = await res.json();
 
-      siAnswer.textContent = data.interpretation;
+      const safeHtml = (data.interpretation || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+      siAnswer.innerHTML = safeHtml;
       lastVectorMatches = data.vector_matches || [];
       const responseLang = data.detected_lang || currentLang;
       renderVectorCards(lastVectorMatches, responseLang);
